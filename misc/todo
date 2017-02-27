@@ -1,0 +1,201 @@
+
+https://github.com/mdeverdelhan/ta4j
+
+interaktywne wykresy
+annualized return, avg win/loss%, max drawdown on close, max drawdown daily (moze do LW stats
+
+
+sp500:
+kupuj gdy cena zamkniecia jest wyzsza niz poprzedni slupek a otwarcie nast dnia jest nizsze od zamkniecia
+close: otwarcie kolejnego dnia wyzsze od poziomu wejscia
+skutecznosc 79%, 17 wygranych pod rzad
+
+usunac
+initial money
+total net profit z TradingRegister
+inne nieprocentowe wyniki (drawdown)
+
+Flow -> TradingRegister, TradingLedger
+dodac metode close() lub revert() do tradu
+
+ResultsOverviewProvider
+po co publiki?
+private static final String H_TOTAL_PROFIT_PERCENT = "total_profit%";
+
+
+stan konta liczony na eod a nie na zamknieciu
+
+
+http://www.geniustrader.org/screenshots.html
+## Global analysis (full portfolio always invested)
+Analysis of the portfolio (1993-01-04 00:00:00 / 2002-10-04 00:00:00) :
+-----------------------------------------------------
+Performance :  1004% ( 28.1%)	  Buy & Hold : -88.4% (-19.9%) () => by year
+MaxDrawDown :       41.8%  B&H MaxDrawDown :    97.6%
+Best performance :  1004%  Worst performance :  -2.3%
+Net gain :      100415.29  Gross gain :     100415.29
+
+Trades statistics :
+Number of trades :    198  Trades/Year :        20.31
+Number of gains :      95  Number of losses :     103  Win. ratio :   48.0%
+Max consec. win :       5  Max consec. loss :       9  Expectancy :    0.01
+Average gain :      6.71%  Average loss :      -3.62%  Avg. perf  :   1.22%
+Biggest gain :     48.32%  Biggest loss :     -18.69%  Profit fac :    1.85
+Sum of gains :  243627.55  Sum of losses : -143212.25  Risk of ruin : 34.9%
+
+
+
+Na waluty:
+sme6 wyzej niz sme6(date - 1)
+sme9 > sme18
+sme3 kontraktow futures na obligacje usa wyzej niz sme25
+
+close:
+sme9 < sme18
+
+
+metale:
+open jak trend wzrostowy ale
+waluty zagraniczne musza byc w trendzie rosnacym a stopy procentowe w malejacym
+
+
+
+
+
+Odchylenie stand, wariancja:
+jesli prezcietny zakres zmian wynosi 1 dolar a odchylenie stand piec centow trzeba zaryzykowac 1,15 dolara, czyli 3 stand odchylenia powyzej sredniej
+jesli odch stand to 50c trzeba zaryzykowac 2.5 dolara zeby nie byc wypchnietym przez 1 slupek
+czesto systemy uwzgledniaja przecietny zakres zamiast prawdziwego zakresu zmiany
+
+
+architektura:
+	generowanie sygnalow prostych np przeciecie srednich (otwarcie, ale tz chyba sl i tp? przynajmniej sugerowany)
+	framework bierze sygnal(y) dla danego dnia czy intradaya (kazdy sygnal moze miec jakies atrybuty np wage 0-1) i podejmuje decyzje, np otiwera pozycje jak ma srodki, poprzednie nei sa stratne itp
+	statystyki - operuja na liscie transakcji czy sygnalow?
+
+https://www.assembla.com/spaces/mutunus-tutunus/admin/index
+
+http://www.investopedia.com/articles/trading/04/042104.asp#axzz1bUyq9PrN
+http://www.investopedia.com/articles/trading/09/random-reinforcement-why-most-traders-fail.asp#axzz1arkC413N
+
+mt strategies aggregation to enhance the probability of success is of course good, though not new.
+mt The author never looks at the difference between short and long signals.
+Forex Trading Secrets: A Trading System Revealed
+
+Seven Trading Systems for the S&P Futures: Gap Strategies to Day Trade the Opening Bell
+The MEJT System: A New Tool for Day Trading the S&P 500 Index
+Arta Collinsa �Beating the Financial Futures Market�
+
+
+
+http://stooq.pl/q/a/i/?s=wig20
+
+49/49 - da rade szacowac % dla tradu? baza historyczna musialaby byc naprawde duza
+
+MEJDZORY:
+0] Jacek - niech zrobi gt dla paru instr
+		    
+
+1-DONE] statsy w stylu aliora <open - close>
+	* generowac positions trades report -> kazdy wiersz ma miec otwarcie / zamkniecie 
+2, 1w] trend following strategy
+	how much to buy or sell is based on the size of the trading account and the volatility of the issue
+	w excelu porobic statsy najpierw, potem nowy stats provider z sma ema i innymi ktorych chce uzyc
+3, 2d] Refactor - asset z nazwa, typem, (synonimami pozniej?) profit calculatorem (liczacym tez brokerage?):
+	* Asset powinien miec info o kalkulatorze zysku(?) i/lub broka i przekazywac go do kazdego closera etc
+	* brokerage: ForceCloser - jak liczyc brokerage, TimeoutCloser
+	* Trade - profit calculator w konstruktorze (do MMS)
+	* LW stats provider: "%.4f", czasami .2f
+4, 3d] zapewniac ze idki sie nie dubluja i inne sanity. troche junitow jesli arch jest ok
+5] money management system (jak by wplywal na myforexdot
+	* poczytac cos sensownego (max strata, wielkosc pozycji, co tam jeszcze jest?]
+	* wklepac
+grac z trendem? jak go okreslic,, czytac ksiazki do psychologii
+
+plan2] 
+	okreslic trend (podobno do 70% czasu to boczniak,, spadki sa szybsze niz wzrosty?) ale waluty indeksy itd kazde zachowuje sie inaczej..., raczej statystyki pod dany instrument, nie ma cudownego srodka...
+		spr czy definicja trendu ze stronki jest ok, spr zloto/srebro indeksy (min kgh)
+		przygotowac referencje co jest trendem (w kodzie daty okreslic na poczatek)
+		statystyka zachowania roznych instrumentow w trendzie i boczniaku
+		type trendu: up, down, choppy, boczny, up-10 = up_end?
+			wrzucac to do csvki
+			wariancja zmiany ceny
+			czy da sie przewidziec zmiane bozniaka na trend (np po wolumenie?), ew jak wolumen maleje pod koniec wzrostow znaczy ze koniec?\
+			spr czy ostatnie np 10/20/30 notowan z upa badz z boczniaka daje sygnaly o mozliwej zmianie trendu?
+			jak dokladnie oznaczac trend, na walutach bedzie inaczej niz na indeksach prawdopodobnie
+			
+	rozne strategie na boczniaki i trendy
+		zakodowac strategie ze stronki:
+			commodities http://www.myforexdot.org.uk/commodities-trading-system.html
+			trend http://www.myforexdot.org.uk/trend-trading.html
+		
+* otwieranie nowej pozycji tylko jesli poprzednie nie sa stratne?
+* zamykanie kiedy boczniak albo w dol (ale nie equity rosnie)
+* nie otwierac nowej jesli stara stratna
+* jak ulepszyc kghm killera?
+Flow.getlastDate() troche wtorne...
+* dodac why_open -> krotki opis zaszlych warunkow
+* CommoditiesTradingStrategy moze miec buga z lokalnym high/low zamiast globalnym
+
+TOBECHECKED] Fundamentals-driven markets I wrote, were things like major currency pairs and interest rate markets, and that these markets were best traded with trend following systems as they tended to produce the cleanest trends
+TOBECHECKED] it should be noted however that on markets like the Forex market, which often trends strongly for many months at a time if not longer, using a favourable price exit is usually a bad idea as it is unlikely to make up for missing the big moves; but on an index like the FTSE 100 or the Dow Jones Industrial average it can be very effective.
+TOBECHECKED] adding a stop-loss usually degrades the performance of any trading system, especially those that hang on waiting for an ideal price to exit at.
+			 http://www.myforexdot.org.uk/stop-losses.html
+TBC] czy scalping to bs?
+
+http://www.myforexdot.org.uk/tradingpriceaction.html
+ADX [moze wklepac, sam nie wiem...] http://www.myforexdot.org.uk/TechnicalTradingIndicators.html
+
+jaki lewar 1:4? chyba ok, fkgh teraz to 2k 
+	
+http://www.timvasil.com/blog14/post/2008/03/23/Calendar-class-for-date-manipulation-in-GWT-or-JavaScript.aspx
+http://stackoverflow.com/questions/2527845/how-to-do-calendar-operations-in-java-gwt-how-to-add-days-to-a-date
+	
+
+* uzyc DescStats w LWS
+* maks wielkosc otw pozycji uzaleznic od inwestowanej kasy,, wymaga money managementu, pozniej
+* czasami transaction jest zmniejszane o ilestam,, moze nowy obiekt powinine miec info (id lub wielkosc) o oryginale?
+*     // Flow cached_flow? w factory
+Featury CSV'ek:
+	* cross price
+	* Maksymalne obsuniecie kapita�u � spadek kapita�u przypadajacy na najbardziej nieudana transakcje
+	* czas potrzebny do odrobienia najwiekszego obsuniecia kapita�u
+	* description do tradingRegister co spowodowalo zamkniecie/otwarcie
+* przerabianie CSV'ek z aliora i mbanku
+	* mapowanie USA500 -> SP500,, PZU1 -> PZU (ale to moze w jakims konwerterze/importerze mbanku)
+	* uzyc danych do testow (jak sie nie da bezposrednio to napisac konwerter)
+* laczny i sredni/median czas trwania inwestycji (daytrading - 1, close-close - 2 itd
+* etf_fund (buy & hold) - tez moga byc roczne ale tez dzienne...
+	* bank_account - strategia na 5%;;; tyle tylko ze wynik to bedzie 25% na piec lat; brak procentu skladanego;; dodac taka opcje zeby testowac nie absolutna wielkosc indeksu ale w polaczeniu z kapitalem,, reinwestowac kapital
+	* dodac kase poczatkowa z ktorej bedzie wyliczany profit %,, pamietac o zarzadzaniu pieniedzmi,, jeden trade to max 5% portfela itd
+	* dodac kase z ktorej liczony jest profit,, jesli masz 10k (lub 10 * cena kontraktu poczatkowa) mozesz kupic ok 10k/cena akcji,, plus opcja ze zawsze kupuje za minimum jakies np dwa kontrakty (ale info w logu, csv'ce o tym,, ew zmiekszyc pole 'zaangazowany kapital' jesli takie bedize)?
+	* Lws::roi - laczny zysk przez (kwote kontraktu(pierwszy, sredni?) * ilosc kontraktow(1szy, sredni?))
+
+* MTDate inmutable
+
+
+
+* review czy to ma sens, jesli tak to junity (pozmieniac pakiety i nazwy klas)
+  * junity do LarryWilliamsSummarizer
+  * junity do tradingRegister
+
+* StatisticsManager - TODO,, zmienic nazwe ze statistics?
+* fix TODOs
+
+
+MAJNORY:
+bug:  LarryWilliamsSummarizer:: getLargestPosition() - zwraca wartosc z konca dnia a nie max;; musialbym miec wszystkie tranzakcje zeby to wyliczyc
+
+        // final DescriptiveStatistics d = new DescriptiveStatistics();
+        // d.addValue(1d);
+        // d.addValue(3d);
+        // d.addValue(4d);
+        // System.out.println(d.getPercentile(60));
+
+LATER:
+sma, ema, stochastics
+zrzutka wartosci roznych statystyk do pliku
+max zysk (strata) pod rzad powinna odejmowac pojedyncze straty (do czasu az zysk nie bedzie < 0? ma to sens,, w sumie strategie powinny byc zyskowne wiec oewnie zwroci caly ciag chyba ze ktos sie wysypal w polowie) 
+sciaganie danych ze stoqa
+klasa obliczajaca wynik dla portfela na podstawie kilku tradingRegister
+
