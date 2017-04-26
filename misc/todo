@@ -4,6 +4,7 @@ https://github.com/mdeverdelhan/ta4j
 interaktywne wykresy
 annualized return, avg win/loss%, max drawdown on close, max drawdown daily (moze do LW stats
 
+testy do CachedIndicator i recursive
 
 sp500:
 kupuj gdy cena zamkniecia jest wyzsza niz poprzedni slupek a otwarcie nast dnia jest nizsze od zamkniecia
@@ -11,7 +12,6 @@ close: otwarcie kolejnego dnia wyzsze od poziomu wejscia
 skutecznosc 79%, 17 wygranych pod rzad
 
 usunac
-initial money
 total net profit z TradingRegister
 inne nieprocentowe wyniki (drawdown)
 

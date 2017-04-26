@@ -6,11 +6,21 @@ public enum Side {
         public Side revert() {
             return SHORT;
         }
+
+        @Override
+        public boolean isLong() {
+            return true;
+        }
     },
     SHORT(1) {
         @Override
         public Side revert() {
             return LONG;
+        }
+
+        @Override
+        public boolean isLong() {
+            return false;
         }
     };
 
@@ -27,6 +37,8 @@ public enum Side {
     }
 
     public abstract Side revert();
+    public abstract boolean isLong();
+    public boolean isShort() {return !isLong();}
 
     public int getSizeSigned(int size) {
         size = Math.abs(size);

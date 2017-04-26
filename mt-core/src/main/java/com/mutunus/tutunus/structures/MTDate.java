@@ -362,4 +362,17 @@ public class MTDate implements Serializable, Comparable<MTDate>, Cloneable {
     public MTDate clone() {
         return new MTDate(this);
     }
+
+    public boolean isLt(MTDate other) {
+        return date < other.date;
+    }
+
+    public boolean isGte(MTDate other) {
+        return date >= other.date;
+    }
+
+    public boolean isGt(MTDate other) {
+        return date > other.date;
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.mutunus.tutunus.strategies;
 
 import com.mutunus.tutunus.math.MathUtils;
-import com.mutunus.tutunus.research.indicators.WilliamsVixFixIndicator;
 import com.mutunus.tutunus.structures.Side;
 import com.mutunus.tutunus.structures.Transaction;
 import verdelhan.ta4j.Decimal;
@@ -17,24 +16,25 @@ import java.math.BigDecimal;
 
 
 /**
- * 
+ *
  */
 public class MomentumStrategy extends AbstractStrategy {
     private final static double BR = 0.0000d;
     private final static BigDecimal BROKERAGE = bd(BR);
 
-    private static class LongShortOpenerCloser implements Opener, Closer {
+    private static class LongShortTradeOpenerTradeCloser implements TradeOpener, TradeCloser {
 
 
         private final SMAIndicator smaIndicator;
 
-        public LongShortOpenerCloser(SMAIndicator smaIndicator) {
+        public LongShortTradeOpenerTradeCloser(SMAIndicator smaIndicator) {
             this.smaIndicator = smaIndicator;
         }
 
         @Override
         public Transaction openTrade(final int tickId, final TimeSeries timeSeries) {
             final Decimal smaValue = smaIndicator.getValue(tickId);
+            final Decimal pastSmaValue = smaIndicator.getValue(tickId - 40);
 
 
             MinPriceIndicator minPriceInd = new MinPriceIndicator(timeSeries);
@@ -53,6 +53,7 @@ public class MomentumStrategy extends AbstractStrategy {
 //            uptrend &= tick2.isLower(tick);
 
             boolean uptrend = smaValue.isLessThan(closePrice);
+            uptrend &= smaValue.isGreaterThan(pastSmaValue);
             if (upmove > 20 && uptrend) {
                 final Transaction t = new Transaction(
                         tickId, Side.LONG, 1, tick.getClosePrice().asBigDecimal(), BROKERAGE, timeSeries.getDate(tickId));
@@ -74,9 +75,11 @@ public class MomentumStrategy extends AbstractStrategy {
             final double changeFromTop = MathUtils.computeChange(pastHigh.toDouble(), closePrice.toDouble());
 
             if (changeFromTop < -10) {
+                final String formatedValue = String.format("%.2f", changeFromTop);
+                final String comment = "MovingTP: " + formatedValue + "%";
                 final Transaction t = new Transaction(
                         tickId, openedTransaction.getSide().revert(), openedTransaction.getSize(),
-                        tick.getClosePrice().asBigDecimal(), BROKERAGE, timeSeries.getDate(tickId), "MovingTP: " + changeFromTop + "%");
+                        tick.getClosePrice().asBigDecimal(), BROKERAGE, timeSeries.getDate(tickId), comment);
                 return t;
             }
             return null;
@@ -98,17 +101,17 @@ public class MomentumStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected Opener[] getOpeners() {
-        return new Opener[]{new LongShortOpenerCloser(smaIndicator)};
+    protected TradeOpener[] getOpeners() {
+        return new TradeOpener[]{new LongShortTradeOpenerTradeCloser(smaIndicator)};
     }
 
     @Override
-    protected Closer[] getClosers() {
-        return new Closer[]{//
-                new TimeoutCloser(80),//
-//                new TakeProfitCloser(40),//
-                new StopLossCloser(10),//
-                new LongShortOpenerCloser(smaIndicator)
+    protected TradeCloser[] getClosers() {
+        return new TradeCloser[]{//
+                new TimeoutTradeCloser(80),//
+//                new TakeProfitTradeCloser(40),//
+                new StopLossTradeCloser(10),//
+                new LongShortTradeOpenerTradeCloser(smaIndicator)
         };
     }
 

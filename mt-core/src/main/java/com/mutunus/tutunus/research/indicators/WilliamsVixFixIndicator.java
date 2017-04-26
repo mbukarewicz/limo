@@ -20,7 +20,7 @@ public class WilliamsVixFixIndicator extends CachedIndicator<Decimal> {
         final Tick tick = getTimeSeries().getTick(tickId);
 
         final Decimal highestValue = highestHigh.getValue(tickId);
-        Decimal vix = highestValue.minus(tick.getMinPrice());
+        Decimal vix = highestValue.minus(tick.getLowPrice());
         vix = vix.dividedBy(highestValue);
         vix = vix.multipliedBy(Decimal.HUNDRED);
 

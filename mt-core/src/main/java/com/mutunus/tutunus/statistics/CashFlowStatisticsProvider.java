@@ -18,8 +18,6 @@ public class CashFlowStatisticsProvider extends AbstractStatisticsProvider {
     private static final String H_SIZE_POS = "#pos-size";
     private static final String H_NO_TRADES = "#trades";
 
-    public CashFlowStatisticsProvider() {
-    }
 
     private String[] mergeHeaders(final List<TradingRegister> tradingRegisters) {
         final Set<String> headers = new LinkedHashSet<String>();

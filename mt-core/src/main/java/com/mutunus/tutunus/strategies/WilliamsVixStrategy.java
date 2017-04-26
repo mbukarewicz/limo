@@ -4,12 +4,8 @@ import com.mutunus.tutunus.research.indicators.WilliamsVixFixIndicator;
 import com.mutunus.tutunus.structures.Side;
 import com.mutunus.tutunus.structures.Transaction;
 import verdelhan.ta4j.Decimal;
-import verdelhan.ta4j.Indicator;
 import verdelhan.ta4j.Tick;
 import verdelhan.ta4j.TimeSeries;
-import verdelhan.ta4j.indicators.CachedIndicator;
-import verdelhan.ta4j.indicators.helpers.HighestValueIndicator;
-import verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
 
 import java.math.BigDecimal;
 
@@ -27,12 +23,12 @@ public class WilliamsVixStrategy extends AbstractStrategy {
     private final static double BR = 0.0000d;
     private final static BigDecimal BROKERAGE = bd(BR);
 
-    private static class LongShortOpener implements Opener {
+    private static class LongShortTradeOpener implements TradeOpener {
 
 
         private final WilliamsVixFixIndicator wvx;
 
-        public LongShortOpener(WilliamsVixFixIndicator wvx) {
+        public LongShortTradeOpener(WilliamsVixFixIndicator wvx) {
             this.wvx = wvx;
         }
 
@@ -41,7 +37,7 @@ public class WilliamsVixStrategy extends AbstractStrategy {
 
             final Tick tick = timeSeries.getTick(tickId);
             final Decimal vix = wvx.getValue(tickId);
-//            System.out.println(tickId + " " + timeSeries.getDate(tickId) + ", hghs: " + highestValue + ", min: " + tick.getMinPrice()
+//            System.out.println(tickId + " " + timeSeries.getDate(tickId) + ", hghs: " + highestValue + ", min: " + tick.getLowPrice()
 //                    + ", vix1 " + vix1
 //                    + ", vix2 " + vix2
 //                    + " -> " + " vix: " + vix);
@@ -70,16 +66,16 @@ public class WilliamsVixStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected Opener[] getOpeners() {
-        return new Opener[]{new LongShortOpener(wvf)};
+    protected TradeOpener[] getOpeners() {
+        return new TradeOpener[]{new LongShortTradeOpener(wvf)};
     }
 
     @Override
-    protected Closer[] getClosers() {
-        return new Closer[]{//
-                new TimeoutCloser(80),//
-                new TakeProfitCloser(8),//
-//                new StopLossCloser(10)//
+    protected TradeCloser[] getClosers() {
+        return new TradeCloser[]{//
+                new TimeoutTradeCloser(80),//
+                new TakeProfitTradeCloser(8),//
+//                new StopLossTradeCloser(10)//
         };
     }
 

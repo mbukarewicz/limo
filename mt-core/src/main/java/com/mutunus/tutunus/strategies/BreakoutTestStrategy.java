@@ -17,7 +17,7 @@ public class BreakoutTestStrategy extends AbstractStrategy {
     private final static BigDecimal BROKERAGE = bd(BR);
     private final double breakoutThreshold;
 
-    class LongShortOpener implements Opener {
+    class LongShortTradeOpener implements TradeOpener {
 
         @Override
         public Transaction openTrade(final int tickId, final TimeSeries timeSeries) {
@@ -62,17 +62,17 @@ public class BreakoutTestStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected Opener[] getOpeners() {
-        return new Opener[]{new LongShortOpener()};
+    protected TradeOpener[] getOpeners() {
+        return new TradeOpener[]{new LongShortTradeOpener()};
     }
 
     @Override
-    protected Closer[] getClosers() {
-        return new Closer[]{
+    protected TradeCloser[] getClosers() {
+        return new TradeCloser[]{
 //                new LongShortCloser()
-                new TimeoutCloser(20),//
-                new TakeProfitCloser(10),//
-                new StopLossCloser(10)//
+                new TimeoutTradeCloser(20),//
+                new TakeProfitTradeCloser(10),//
+                new StopLossTradeCloser(10)//
         };
     }
 

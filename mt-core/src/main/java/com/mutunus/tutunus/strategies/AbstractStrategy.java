@@ -10,16 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 
 
-interface Opener {
-
-    Transaction openTrade(int tickId, TimeSeries timeSeries);
-}
-
-interface Closer {
-
-    Transaction closeTrade(int tickId, TimeSeries timeSeries, Transaction openedTransaction);
-}
-
 public abstract class AbstractStrategy {
 
     protected final TimeSeries timeSeries;
@@ -44,23 +34,23 @@ public abstract class AbstractStrategy {
 
         final List<Transaction> allOpened = new ArrayList<>();
 
-        final Opener[] openers = getOpeners();
-        final Closer[] closers = getClosers();
+        final TradeOpener[] tradeOpeners = getOpeners();
+        final TradeCloser[] tradeClosers = getClosers();
         long currentPositionSize = 0;
 
         for (int qId = ts.getBegin(); qId <= ts.getEnd(); qId++) {
             @SuppressWarnings("unchecked")
             List<Transaction> newOpens = Collections.EMPTY_LIST;
             if (currentPositionSize < maxPositionSize) {
-                newOpens = tryToOpenTrade(timeSeries, openers, qId);
+                newOpens = tryToOpenTrade(timeSeries, tradeOpeners, qId);
                 currentPositionSize += sumPositionSize(newOpens);
             }
 
             if (allowCloseTradeInTheSamePeriodAsOpen) {
                 allOpened.addAll(newOpens);
-                currentPositionSize -= tryToCloseTrades(timeSeries, flowFactory, allOpened, closers, qId);
+                currentPositionSize -= tryToCloseTrades(timeSeries, flowFactory, allOpened, tradeClosers, qId);
             } else {
-                currentPositionSize -= tryToCloseTrades(timeSeries, flowFactory, allOpened, closers, qId);
+                currentPositionSize -= tryToCloseTrades(timeSeries, flowFactory, allOpened, tradeClosers, qId);
                 allOpened.addAll(newOpens);
             }
         }
@@ -81,9 +71,9 @@ public abstract class AbstractStrategy {
     }
 
     @SuppressWarnings("unchecked")
-    private List<Transaction> tryToOpenTrade(final TimeSeries ts, final Opener[] openers, final int qId) {
+    private List<Transaction> tryToOpenTrade(final TimeSeries ts, final TradeOpener[] tradeOpeners, final int qId) {
         List<Transaction> newOpens = null;
-        for (final Opener o : openers) {
+        for (final TradeOpener o : tradeOpeners) {
             final Transaction newOpen = o.openTrade(qId, ts);
             if (newOpen != null) {
                 if (newOpens == null) {
@@ -100,14 +90,14 @@ public abstract class AbstractStrategy {
     private long tryToCloseTrades(final TimeSeries ts,
                                   final FlowFactory flowFactory,
                                   final List<Transaction> allOpened,
-                                  final Closer[] closers,
+                                  final TradeCloser[] tradeClosers,
                                   final int qId) {
         long totalClosed = 0;
 
         final Iterator<Transaction> openedIter = allOpened.iterator();
         while (openedIter.hasNext()) {
             final Transaction tOpen = openedIter.next();
-            for (final Closer c : closers) {
+            for (final TradeCloser c : tradeClosers) {
                 final Transaction tClose = c.closeTrade(qId, ts, tOpen);
                 if (tClose != null) {
                     final Trade trade = new Trade(tOpen, tClose);
@@ -127,10 +117,10 @@ public abstract class AbstractStrategy {
                                       final List<Transaction> allOpened,
                                       final int lastDayId) {
         final Iterator<Transaction> openedIter = allOpened.iterator();
-        final Closer endTestPeriodCloser = getEndTestPeriodCloser();
+        final TradeCloser endTestPeriodTradeCloser = getEndTestPeriodCloser();
         while (openedIter.hasNext()) {
             final Transaction tOpen = openedIter.next();
-            final Transaction tClose = endTestPeriodCloser.closeTrade(lastDayId, ts, tOpen);
+            final Transaction tClose = endTestPeriodTradeCloser.closeTrade(lastDayId, ts, tOpen);
 
             if (tClose != null) {
                 final Trade trade = new Trade(tOpen, tClose);
@@ -144,13 +134,13 @@ public abstract class AbstractStrategy {
         }
     }
 
-    protected Closer getEndTestPeriodCloser() {
-        return new EndOfTradeCloser();
+    protected TradeCloser getEndTestPeriodCloser() {
+        return new EndOfTradeTradeCloser();
     }
 
-    protected abstract Opener[] getOpeners();
+    protected abstract TradeOpener[] getOpeners();
 
-    protected abstract Closer[] getClosers();
+    protected abstract TradeCloser[] getClosers();
 
     protected abstract String getName();
 

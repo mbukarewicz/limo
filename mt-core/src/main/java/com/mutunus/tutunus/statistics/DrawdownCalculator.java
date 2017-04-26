@@ -1,7 +1,15 @@
 package com.mutunus.tutunus.statistics;
 
+import com.mutunus.tutunus.research.indicators.DailyDrawdownIndicator;
+import com.mutunus.tutunus.research.indicators.RealizedProfitIndicator;
+import com.mutunus.tutunus.research.indicators.TradingValuationIndicator;
+import com.mutunus.tutunus.research.indicators.UnrealizedProfitIndicator;
 import com.mutunus.tutunus.structures.TradingRegister;
 import com.mutunus.tutunus.structures.MTDate;
+import verdelhan.ta4j.Decimal;
+import verdelhan.ta4j.TimeSeries;
+import verdelhan.ta4j.indicators.helpers.HighestValueIndicator;
+import verdelhan.ta4j.indicators.simple.ClosePriceIndicator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -13,14 +21,41 @@ import java.util.TreeMap;
 
 
 /**
- * Computes Drawdown according to the formula from {@link {http://comisef.wikidot.com/tutorial:drawdowns}}
  */
 public class DrawdownCalculator {
 
     private final NavigableMap<MTDate, BigDecimal> maxProfitUpToDay = new TreeMap<MTDate, BigDecimal>();
     private final NavigableMap<MTDate, BigDecimal> profits = new TreeMap<MTDate, BigDecimal>();
 
+    final DailyDrawdownIndicator dailyDrawdown;
+    final HighestValueIndicator maxDrawdown;
+
+    final RealizedProfitIndicator realizedProfitIndicator;
+    final UnrealizedProfitIndicator unrealizedProfitIndicator;
+    final TradingValuationIndicator valuationIndicator;
+
+
+    public DrawdownCalculator(TradingRegister tradingRegister, TimeSeries series) {
+
+        realizedProfitIndicator = new RealizedProfitIndicator(series, tradingRegister);
+        unrealizedProfitIndicator = new UnrealizedProfitIndicator(series, tradingRegister, new ClosePriceIndicator(series));
+        valuationIndicator = new TradingValuationIndicator(
+                series,
+                tradingRegister,
+                realizedProfitIndicator,
+                unrealizedProfitIndicator);
+
+        dailyDrawdown = new DailyDrawdownIndicator(series, tradingRegister, valuationIndicator);
+        maxDrawdown = new HighestValueIndicator(dailyDrawdown, Integer.MAX_VALUE);
+    }
+
     public DrawdownCalculator(final TradingRegister tradingRegister) {
+        dailyDrawdown = null;
+        maxDrawdown = null;
+        realizedProfitIndicator = null;
+        unrealizedProfitIndicator = null;
+        valuationIndicator = null;
+
         final SortedSet<MTDate> dates = tradingRegister.getAllDates();
 
         BigDecimal max = BigDecimal.ZERO;
@@ -37,6 +72,28 @@ public class DrawdownCalculator {
             maxProfitUpToDay.put(date, max);
         }
     }
+
+    public double getRealizedProfit(int index) {
+        final Decimal value = realizedProfitIndicator.getValue(index);
+        return value.toDouble();
+    }
+
+    public double getUnrealizedProfit(int index) {
+        final Decimal value = unrealizedProfitIndicator.getValue(index);
+        return value.toDouble();
+    }
+
+    public double getMaxDrawdown(int index) {
+        final Decimal value = maxDrawdown.getValue(index);
+        return value.toDouble();
+    }
+
+    public double getDailyDrawdown(int index) {
+        final Decimal value = dailyDrawdown.getValue(index);
+        return value.toDouble();
+    }
+
+
 
     private BigDecimal getValue(final MTDate date, final NavigableMap<MTDate, BigDecimal> values) {
         // final Entry<MTDate, BigDecimal> floorEntry = values.floorEntry(date);

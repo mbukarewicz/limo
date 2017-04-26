@@ -1,6 +1,5 @@
 package com.mutunus.tutunus;
 
-import com.google.common.net.UrlEscapers;
 import com.mutunus.tutunus.structures.MTException;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.FileUtils;

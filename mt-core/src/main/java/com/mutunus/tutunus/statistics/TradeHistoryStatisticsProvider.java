@@ -1,9 +1,12 @@
 package com.mutunus.tutunus.statistics;
 
+import com.mutunus.tutunus.research.indicators.DailyDrawdownIndicator;
 import com.mutunus.tutunus.structures.TradingRegister;
 import com.mutunus.tutunus.structures.FlowMetaInfo;
 import com.mutunus.tutunus.structures.MTDate;
 import com.mutunus.tutunus.structures.Trade;
+import verdelhan.ta4j.TimeSeries;
+import verdelhan.ta4j.indicators.helpers.HighestValueIndicator;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,8 +35,10 @@ public class TradeHistoryStatisticsProvider extends AbstractStatisticsProvider {
 
     private static final String[] HEADERS = {H_ID, H_ASSET, H_SIDE, H_SIZE, H_DATE_FROM, H_DATE_TO, H_PRICE_OPEN,
             H_PRICE_CLOSE, H_PROFIT, H_PROFIT_PERCENT, H_TOTAL_PROFIT_PERCENT, H_TOTAL_PROFIT, H_DRAWDOWN_ABSOLUTE, H_DRAWDOWN_RELATIVE, H_CLOSE_REASON};
+    private final TimeSeries series;
 
-    public TradeHistoryStatisticsProvider() {
+    public TradeHistoryStatisticsProvider(TimeSeries series) {
+        this.series = series;
     }
 
     @Override
@@ -50,17 +55,13 @@ public class TradeHistoryStatisticsProvider extends AbstractStatisticsProvider {
 
     private SimpleStatisticsModel processFlow(final TradingRegister tradingRegister) {
         final List<Trade> trades = tradingRegister.getAllTrades();
-        Collections.sort(trades, new Comparator<Trade>() {
-
-            @Override
-            public int compare(final Trade o1, final Trade o2) {
-                return o1.getCloseDate().compareTo(o2.getCloseDate());
-            }
-        });
+        Collections.sort(trades, Comparator.comparing(Trade::getCloseDate));
 
         final String description = getDescription(tradingRegister);
         final SimpleStatisticsModel m = new SimpleStatisticsModel(description, HEADERS, trades.size() + 1);
 
+        final DailyDrawdownIndicator dailyDrawdown = new DailyDrawdownIndicator(series, tradingRegister);
+        final HighestValueIndicator maxDrawdown = new HighestValueIndicator(dailyDrawdown, Integer.MAX_VALUE);
         final DrawdownCalculator drawdown = new DrawdownCalculator(tradingRegister);
 
         BigDecimal profitPercentSum = new BigDecimal(0);
@@ -81,12 +82,13 @@ public class TradeHistoryStatisticsProvider extends AbstractStatisticsProvider {
             m.set(row, H_PROFIT_PERCENT, String.format("%.2f%%", profitPercent.floatValue()));
             m.set(row, H_TOTAL_PROFIT_PERCENT, String.format("%.2f%%", profitPercentSum.floatValue()));
 
+            final int tickId = series.getTickId(t.getCloseDate());
             final BigDecimal totalNetProfit = tradingRegister.getTotalNetProfit(t.getCloseDate());
             m.set(row, H_TOTAL_PROFIT, String.format("%.4f", totalNetProfit.floatValue()));
 
             final double currentDrawdown = drawdown.getAbsoluteDrawdown(t.getCloseDate());
-            final double relativeDrawdown = drawdown.getRelativeDrawdown(t.getCloseDate());
-            m.set(row, H_DRAWDOWN_ABSOLUTE, String.format("%.2f", currentDrawdown));
+            final double relativeDrawdown = dailyDrawdown.getValue(tickId).toDouble();
+            m.set(row, H_DRAWDOWN_ABSOLUTE, String.format("%.1f", currentDrawdown));
             m.set(row, H_DRAWDOWN_RELATIVE, String.format("%.1f%%", relativeDrawdown));
 
             m.set(row, H_CLOSE_REASON, t.getCloseComment());
@@ -105,8 +107,11 @@ public class TradeHistoryStatisticsProvider extends AbstractStatisticsProvider {
         m.set(lastRow, H_PRICE_CLOSE, "---");
         m.set(lastRow, H_PROFIT, "---");
         m.set(lastRow, H_PROFIT_PERCENT, "---");
-        m.set(lastRow, H_DRAWDOWN_ABSOLUTE, String.format("%.2f", drawdown.getMaxAbsoluteDrawdown()));
-        m.set(lastRow, H_DRAWDOWN_RELATIVE, String.format("%.2f%%", drawdown.getMaxRelativeDrawdown()));
+        m.set(lastRow, H_DRAWDOWN_ABSOLUTE, String.format("%.1f", drawdown.getMaxAbsoluteDrawdown()));
+
+        final double maxDrawdownValue = maxDrawdown.getValue(series.getEnd()).toDouble();
+        m.set(lastRow, H_DRAWDOWN_RELATIVE, String.format("%.1f%%", maxDrawdownValue));
+//        m.set(lastRow, H_DRAWDOWN_RELATIVE, String.format("%.2f%%", drawdown.getMaxRelativeDrawdown()));
 
         final BigDecimal totalNetProfit = tradingRegister.getTotalNetProfit(lastDate);
         m.set(lastRow, H_TOTAL_PROFIT_PERCENT, String.format("%.4f%%", profitPercentSum.floatValue()));

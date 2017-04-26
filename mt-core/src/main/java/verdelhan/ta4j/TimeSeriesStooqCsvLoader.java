@@ -3,11 +3,11 @@ package verdelhan.ta4j;
 
 import com.mutunus.tutunus.dao.readers.StooqCsvParser;
 import com.mutunus.tutunus.structures.MTException;
-import com.mutunus.tutunus.structures.QuotationsImpl;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class TimeSeriesStooqCsvLoader {
@@ -26,7 +26,11 @@ public class TimeSeriesStooqCsvLoader {
         final File sourceFile = new File(storagePath, asset + CSV_DAILY_POSTFIX);
         if (!sourceFile.exists()) {
             String msg = "No quotations for [" + asset + "] found in [" + sourceFile.getAbsolutePath() + "]";
-            throw new RuntimeException(msg);
+            System.out.println(msg);
+            List<Tick> ticks = new ArrayList<>();
+            TimeSeries timeSeries = new TimeSeries(asset, ticks);
+            return timeSeries;
+//            throw new RuntimeException(msg);
         }
         try {
             final String csv = FileUtils.readFileToString(sourceFile);

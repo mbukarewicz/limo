@@ -9,11 +9,11 @@ import verdelhan.ta4j.indicators.CachedIndicator;
 
 import java.math.BigDecimal;
 
-public class TotalPercentageProfitIndicator extends CachedIndicator<Decimal> {
+public class RealizedProfitIndicator extends CachedIndicator<Decimal> {
 
     private final TradingRegister tradingRegister;
 
-    public TotalPercentageProfitIndicator(TimeSeries series, TradingRegister tradingRegister) {
+    public RealizedProfitIndicator(TimeSeries series, TradingRegister tradingRegister) {
         super(series);
         this.tradingRegister = tradingRegister;
     }
@@ -21,7 +21,7 @@ public class TotalPercentageProfitIndicator extends CachedIndicator<Decimal> {
     @Override
     protected Decimal calculate(int index) {
         MTDate date = getTimeSeries().getDate(index);
-        BigDecimal result = tradingRegister.getTotalProfitPercent(date);
+        BigDecimal result = tradingRegister.getRealizedProfit(date);
 
         return Decimal.valueOf(result);
     }

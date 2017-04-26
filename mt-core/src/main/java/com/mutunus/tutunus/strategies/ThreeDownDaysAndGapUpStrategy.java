@@ -15,7 +15,7 @@ public class ThreeDownDaysAndGapUpStrategy extends AbstractStrategy {
     private final static double BR = 0.0000d;
     private final static BigDecimal BROKERAGE = bd(BR);
 
-    private static class LongShortOpenerCloser implements Opener, Closer {
+    private static class LongShortTradeOpenerTradeCloser implements TradeOpener, TradeCloser {
 
         @Override
         public Transaction openTrade(final int tickId, final TimeSeries timeSeries) {
@@ -55,17 +55,17 @@ public class ThreeDownDaysAndGapUpStrategy extends AbstractStrategy {
     }
 
     @Override
-    protected Opener[] getOpeners() {
-        return new Opener[]{new LongShortOpenerCloser()};
+    protected TradeOpener[] getOpeners() {
+        return new TradeOpener[]{new LongShortTradeOpenerTradeCloser()};
     }
 
     @Override
-    protected Closer[] getClosers() {
-        return new Closer[]{//
-                new LongShortOpenerCloser()
-//                new TimeoutCloser(80),//
-//                new TakeProfitCloser(8),//
-//                new StopLossCloser(10)//
+    protected TradeCloser[] getClosers() {
+        return new TradeCloser[]{//
+                new LongShortTradeOpenerTradeCloser()
+//                new TimeoutTradeCloser(80),//
+//                new TakeProfitTradeCloser(8),//
+//                new StopLossTradeCloser(10)//
         };
     }
 

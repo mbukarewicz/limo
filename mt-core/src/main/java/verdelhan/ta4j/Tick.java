@@ -1,18 +1,18 @@
 /**
  * The MIT License (MIT)
- *
+ * <p>
  * Copyright (c) 2014-2016 Marc de Verdelhan & respective authors (see AUTHORS)
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
+ * <p>
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * <p>
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
@@ -26,16 +26,29 @@ package verdelhan.ta4j;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.util.Locale;
+
 /**
  * End tick of a time period.
  * <p>
  */
 public class Tick {
 
+    private static final String CSV_DELIM = ",";
+    public static final String CSV_LINE_FORMAT = "%s" + CSV_DELIM
+            + "%s" + CSV_DELIM
+            + "%s" + CSV_DELIM
+            + "%s" + CSV_DELIM
+            + "%s" + CSV_DELIM
+            + "%d";
     /** Time period (e.g. 1 day, 15 min, etc.) of the tick */
     private Period timePeriod;
     /** End time of the tick */
     private DateTime endTime;
+    private LocalDate endDate;
     /** Begin time of the tick */
     private DateTime beginTime;
     /** Open price of the period */
@@ -45,7 +58,7 @@ public class Tick {
     /** Max price of the period */
     private Decimal maxPrice = null;
     /** Min price of the period */
-    private Decimal minPrice = null;
+    private Decimal lowPrice = null;
     /** Traded amount during the period */
     private Decimal amount = Decimal.ZERO;
     /** Volume of the period */
@@ -62,7 +75,9 @@ public class Tick {
         checkTimeArguments(timePeriod, endTime);
         this.timePeriod = timePeriod;
         this.endTime = endTime;
+        this.endDate = LocalDate.of(endTime.getYear(), endTime.getMonthOfYear(), endTime.getDayOfMonth());
         this.beginTime = endTime.minus(timePeriod);
+        this.endDate = LocalDate.of(endTime.getYear(), endTime.getMonthOfYear(), endTime.getDayOfMonth());
     }
 
     /**
@@ -126,10 +141,11 @@ public class Tick {
         checkTimeArguments(timePeriod, endTime);
         this.timePeriod = timePeriod;
         this.endTime = endTime;
+        this.endDate = LocalDate.of(endTime.getYear(), endTime.getMonthOfYear(), endTime.getDayOfMonth());
         this.beginTime = endTime.minus(timePeriod);
         this.openPrice = openPrice;
         this.maxPrice = highPrice;
-        this.minPrice = lowPrice;
+        this.lowPrice = lowPrice;
         this.closePrice = closePrice;
         this.volume = volume;
     }
@@ -179,8 +195,8 @@ public class Tick {
     /**
      * @return the min price of the period
      */
-    public Decimal getMinPrice() {
-        return minPrice;
+    public Decimal getLowPrice() {
+        return lowPrice;
     }
 
     /**
@@ -202,6 +218,10 @@ public class Tick {
      */
     public DateTime getEndTime() {
         return endTime;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
     }
 
     @Override
@@ -233,7 +253,7 @@ public class Tick {
     public boolean isBullish() {
         return (openPrice != null) && (closePrice != null) && openPrice.isLessThan(closePrice);
     }
-    
+
     /**
      * @return a human-friendly string of the end timestamp
      */
@@ -245,7 +265,7 @@ public class Tick {
      * @return a even more human-friendly string of the end timestamp
      */
     public String getSimpleDateName() {
-        return endTime.toString("dd/MM/yyyy");
+        return endTime.toString("yyyy-MM-dd");
     }
 
     /**
@@ -264,8 +284,35 @@ public class Tick {
 
     public boolean isLower(final Tick other) {
         Decimal otherClosePrice = other.getClosePrice();
-
         return closePrice.isLessThan(otherClosePrice);
+    }
+
+    public String toCsvLine() {
+        final String lastTickDate = getSimpleDateName();
+        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+        df.applyPattern("0.####");
+
+        final String o = df.format(openPrice.toDouble());
+        final String h = df.format(maxPrice.toDouble());
+        final String l = df.format(lowPrice.toDouble());
+        final String c = df.format(closePrice.toDouble());
+        final String result = String.format(Locale.US, CSV_LINE_FORMAT, lastTickDate,
+                o, h, l, c, (long) volume.toDouble());
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        System.out.printf("%.2f: Default locale\n", 3.1415926535);
+        System.out.printf(Locale.GERMANY, "%.2f: Germany locale\n", 3.1415926535);
+        System.out.printf(Locale.US, "%.2f: US locale\n", 3.1415926535);
+
+
+//        final DecimalFormat df = new DecimalFormat("0.####");
+        DecimalFormat df = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+        df.applyPattern("0.####");
+        final String o = df.format(3.1415926535);
+        System.out.println("df: " + o);
     }
 
 }

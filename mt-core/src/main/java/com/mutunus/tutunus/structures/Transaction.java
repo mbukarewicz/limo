@@ -84,10 +84,6 @@ public class Transaction {
         return ++NEXT_ID;
     }
 
-    public long getId() {
-        return id;
-    }
-
     public Transaction getPart(final int reqSize) {
         if (reqSize <= 0 || reqSize > this.size) {
             throw new MTException(String.format("Cannot compute part of size '%d' from object of size '%d'", reqSize,

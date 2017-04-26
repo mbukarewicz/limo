@@ -7,9 +7,9 @@ import verdelhan.ta4j.TimeSeries;
 import java.math.BigDecimal;
 
 
-public class StopLossCloser extends TakeProfitCloser {
+public class StopLossTradeCloser extends TakeProfitTradeCloser {
 
-    public StopLossCloser(final double maxLossInPercent) {
+    public StopLossTradeCloser(final double maxLossInPercent) {
         super(maxLossInPercent);
     }
 

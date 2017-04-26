@@ -5,11 +5,11 @@ import verdelhan.ta4j.Tick;
 import verdelhan.ta4j.TimeSeries;
 
 
-public class TimeoutCloser implements Closer {
+public class TimeoutTradeCloser implements TradeCloser {
 
     private final int businessDaysToClose;
 
-    public TimeoutCloser(final int businessDaysToClose) {
+    public TimeoutTradeCloser(final int businessDaysToClose) {
         this.businessDaysToClose = businessDaysToClose;
     }
 

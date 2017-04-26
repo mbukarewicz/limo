@@ -15,6 +15,7 @@ public interface TradingRegister {
 
     List<Trade> getNewOrClosedTradesForDate(MTDate date);
     List<Trade> getTrades2(final MTDate date);
+    List<Trade> getNonTerminatingTrades(final MTDate date);
 
     int getOpenedPositionSize(MTDate date);
 
@@ -28,7 +29,5 @@ public interface TradingRegister {
 
     List<Trade> getAllTrades();
 
-    BigDecimal getInitialMoney();
-
-    BigDecimal getTotalProfitPercent(MTDate date);
+    BigDecimal getRealizedProfit(MTDate date);
 }

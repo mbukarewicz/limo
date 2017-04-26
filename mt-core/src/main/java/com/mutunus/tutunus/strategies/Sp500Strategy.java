@@ -13,7 +13,7 @@
 //    private final static double BR = 0.01d;
 //    private final static BigDecimal BROKERAGE = bd(BR);
 //
-//    class LongShortOpener implements Opener {
+//    class LongShortTradeOpener implements TradeOpener {
 //
 //        @Override
 //        public Transaction openTrade(final int qId, final Quotations qs) {
@@ -31,7 +31,7 @@
 //
 //    }
 //
-//    class LongShortCloser implements Closer {
+//    class LongShortCloser implements TradeCloser {
 //
 //        @Override
 //        public Transaction closeTrade(final int qId, final Quotations qs, final Transaction openTransaction) {
@@ -65,13 +65,13 @@
 //    }
 //
 //    @Override
-//    protected Opener[] getOpeners() {
-//        return new Opener[]{new LongShortOpener()};
+//    protected TradeOpener[] getOpeners() {
+//        return new TradeOpener[]{new LongShortTradeOpener()};
 //    }
 //
 //    @Override
-//    protected Closer[] getClosers() {
-//        return new Closer[]{new LongShortCloser()};// , new TimeoutCloser()};
+//    protected TradeCloser[] getClosers() {
+//        return new TradeCloser[]{new LongShortCloser()};// , new TimeoutTradeCloser()};
 //    }
 //
 //    private boolean canGoLong(final Quotations qs, final int qId) {

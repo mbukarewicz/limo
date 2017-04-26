@@ -6,12 +6,12 @@ import verdelhan.ta4j.TimeSeries;
 import java.math.BigDecimal;
 
 
-public class TakeProfitCloser implements Closer {
+public class TakeProfitTradeCloser implements TradeCloser {
 
     private static final BigDecimal _100 = new BigDecimal("100");
     private final BigDecimal profitInPercent;
 
-    public TakeProfitCloser(final double profitInPercent) {
+    public TakeProfitTradeCloser(final double profitInPercent) {
         this.profitInPercent = new BigDecimal(Double.toString(profitInPercent));
     }
 
@@ -62,7 +62,7 @@ public class TakeProfitCloser implements Closer {
             targetPercent = targetPercent.divide(_100); // 97.5 -> 0.975
 
             final BigDecimal expectedPrice = openTransaction.getPrice().multiply(targetPercent);
-            final BigDecimal low = timeSeries.getTick(tickId).getMinPrice().asBigDecimal();
+            final BigDecimal low = timeSeries.getTick(tickId).getLowPrice().asBigDecimal();
 
             if (low.compareTo(expectedPrice) <= 0) {
                 targetPrice = expectedPrice;

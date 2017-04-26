@@ -1,8 +1,8 @@
 package com.mutunus.tutunus.strategies;
 
-class EndOfTradeCloser extends TimeoutCloser {
+class EndOfTradeTradeCloser extends TimeoutTradeCloser {
 
-    public EndOfTradeCloser() {
+    public EndOfTradeTradeCloser() {
         super(0);
     }
 

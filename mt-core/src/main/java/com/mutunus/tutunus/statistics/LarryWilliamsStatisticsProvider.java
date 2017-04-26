@@ -93,11 +93,12 @@ public class LarryWilliamsStatisticsProvider extends AbstractStatisticsProvider 
 
             final BigDecimal netProfit = summarizer.getTotalNetProfit();
             m.set(row, H_PROFIT, String.format("%.4f", netProfit.floatValue()));
-            BigDecimal profitPercent = divide(netProfit, f.getInitialMoney());
-            if (profitPercent != null) {
-                profitPercent = profitPercent.multiply(new BigDecimal(100));
-            }
-            m.set(row, H_PROFIT_PERCENT, toString("%.1f%%", profitPercent));
+//            BigDecimal profitPercent = divide(netProfit, f.getInitialMoney());
+//            if (profitPercent != null) {
+//                profitPercent = profitPercent.multiply(new BigDecimal(100));
+//            }
+//            m.set(row, H_PROFIT_PERCENT, toString("%.1f%%", profitPercent));
+            m.set(row, H_PROFIT_PERCENT, toString("%.1f%%", null));
 
             final int noOfTrades = summarizer.getNumberOfTrades();
             final int numberOfWinningTrades = summarizer.getNumberOfWinningTrades();

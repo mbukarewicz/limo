@@ -1,21 +1,13 @@
 package com.mutunus.tutunus.dao.readers;
 
-import au.com.bytecode.opencsv.CSVReader;
 import com.mutunus.tutunus.structures.MTDate;
 import com.mutunus.tutunus.structures.Quotation;
-import com.mutunus.tutunus.structures.QuotationsImpl;
-import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import verdelhan.ta4j.Tick;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 
 public class StooqCsvParser {
@@ -98,49 +90,43 @@ public class StooqCsvParser {
     // return quotations;
     // }
 
-    public QuotationsImpl parsePerAsset(final String asset, final String csv) {
-        final List<String[]> data = splitIntoLines(csv);
+//    public QuotationsImpl parsePerAsset(final String asset, final String csv) {
+//        final List<String[]> data = splitIntoLines(csv);
+//
+//        final QuotationsImpl quotations = new QuotationsImpl(asset, data.size());
+//        int i = 0;
+//        for (final String[] split : data) {
+//            final String _date = split[0];
+//            final String open = split[1];
+//            final String high = split[2];
+//            final String low = split[3];
+//            final String close = split[4];
+//            String volume = "-1";
+//            if (split.length == 6) {
+//                volume = split[5];
+//            }
+//
+//            final Quotation q = Quotation.newInstance(open, high, low, close, volume);
+//            final MTDate date = MTDate.parse(_date);
+//
+//            quotations.setData(i, date, q);
+//            i++;
+//        }
+//        return quotations;
+//    }
 
-        final QuotationsImpl quotations = new QuotationsImpl(asset, data.size());
-        int i = 0;
-        for (final String[] split : data) {
-            final String _date = split[0];
-            final String open = split[1];
-            final String high = split[2];
-            final String low = split[3];
-            final String close = split[4];
-            String volume = "-1";
-            if (split.length == 6) {
-                volume = split[5];
-            }
-
-            final Quotation q = Quotation.newInstance(open, high, low, close, volume);
-            final MTDate date = MTDate.parse(_date);
-
-            quotations.setData(i, date, q);
-            i++;
+    private static List<String[]> splitIntoLines(final String csv) {
+//        String lines[] = csv.split("\\r?\\n");
+        String lines[] = csv.split("\\s+");
+        final List<String[]> list = new ArrayList<>();
+        for (int i = 1; i < lines.length; i++) {
+            final String line = lines[i];
+            list.add(line.split(","));
         }
-        return quotations;
+        return list;
     }
 
-    private List<String[]> splitIntoLines(final String csv) {
-        CSVReader reader = null;
-        List<String[]> data = null;
-        try {
-            reader = new CSVReader(new StringReader(csv));
-            data = reader.readAll();
-            if (!data.isEmpty()) {
-                data.remove(0); // remove header
-            }
-        } catch (final IOException e) {
-            e.printStackTrace();
-        } finally {
-            IOUtils.closeQuietly(reader);
-        }
-        return data;
-    }
-
-    public List<Tick> extractTicks(String data) {
+    public static List<Tick> extractTicks(String data) {
         final List<String[]> lines = splitIntoLines(data);
 
         DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");

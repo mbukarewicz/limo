@@ -512,4 +512,19 @@ public class TimeSeries {
         return null;
     }
 
+    public int getTickId(MTDate date) {
+        DateTime joda = new DateTime(date.getYear(), date.getMonth(), date.getDay(), 0, 0);
+
+        for (int i = beginIndex; i <= endIndex; i++) {
+            Tick tick = getTick(i);
+            if (tick.getEndTime().isAfter(joda) || tick.getEndTime().isEqual(joda)) {
+                return i;
+            }
+        }
+        throw new RuntimeException("Tick id not found for " + date);
+    }
+
+    public List<Tick> getTicks() {
+        return ticks;
+    }
 }

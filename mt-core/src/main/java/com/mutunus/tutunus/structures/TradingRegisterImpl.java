@@ -5,6 +5,7 @@ import com.mutunus.tutunus.structures.FlowFactory.FlowWritable;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 
 public class TradingRegisterImpl implements TradingRegister, FlowWritable {
@@ -43,7 +44,6 @@ public class TradingRegisterImpl implements TradingRegister, FlowWritable {
 
     private final NavigableMap<MTDate, List<Trade>> trades = new TreeMap<MTDate, List<Trade>>();
     private final NavigableMap<MTDate, List<Transaction>> transactions = new TreeMap<MTDate, List<Transaction>>();
-    private BigDecimal initialMoney = BigDecimal.ZERO;
 
     public TradingRegisterImpl(final String asset) {
         this.asset = asset;
@@ -236,9 +236,42 @@ public class TradingRegisterImpl implements TradingRegister, FlowWritable {
         return Collections.EMPTY_LIST;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public List<Trade> getTrades2(final MTDate date) {
+//        getTrades2 -> getTradesForDate
+        List<Trade> tradeList = getTrades(date);
+        final List<Trade> result = tradeList.stream()
+                .filter(t -> !date.isGt(t.getCloseDate()))
+                .filter(t -> !date.isLt(t.getOpenDate()))
+                .collect(Collectors.toList());
+//        final ArrayList<Trade> result = new ArrayList<>();
+//        for (Trade t : tradeList) {
+//            if (date.isGt(t.getCloseDate())) {
+//                continue;
+//            }
+//            if (date.isLt(t.getOpenDate())) {
+//                continue;
+//            }
+//            result.add(t);
+//        }
+
+        return result;
+    }
+
+    private List<Trade> getTrades(MTDate date) {
+        List<Trade> tradeList;
+        final Entry<MTDate, List<Trade>> floorEntry = trades.floorEntry(date);
+        if (floorEntry == null) {
+            tradeList = Collections.EMPTY_LIST;
+        } else {
+            tradeList = floorEntry.getValue();
+        }
+        return tradeList;
+    }
+
+
+    @Override
+    public List<Trade> getNonTerminatingTrades(final MTDate date) {
         final Entry<MTDate, List<Trade>> floorEntry = trades.floorEntry(date);
         if (floorEntry == null) {
             return Collections.EMPTY_LIST;
@@ -246,14 +279,14 @@ public class TradingRegisterImpl implements TradingRegister, FlowWritable {
         final List<Trade> tradeList = floorEntry.getValue();
         final ArrayList<Trade> result = new ArrayList<>();
         for (Trade t : tradeList) {
-            if (t.getCloseDate().compareTo(date) > 0) {
+            if (t.getCloseDate().isGt(date)) {
                 result.add(t);
             }
         }
 
-
         return result;
     }
+
 
     @Override
     public int getOpenedPositionSize(final MTDate date) {
@@ -340,12 +373,7 @@ public class TradingRegisterImpl implements TradingRegister, FlowWritable {
     }
 
     @Override
-    public BigDecimal getInitialMoney() {
-        return initialMoney;
-    }
-
-    @Override
-    public BigDecimal getTotalProfitPercent(MTDate date) {
+    public BigDecimal getRealizedProfit(MTDate date) {
         if (cache == null) {
             seal();
         }
@@ -357,7 +385,4 @@ public class TradingRegisterImpl implements TradingRegister, FlowWritable {
         return floorEntry.getValue();
     }
 
-    public void setInitialMoney(final BigDecimal initialMoney) {
-        this.initialMoney = initialMoney;
-    }
 }
